@@ -1,0 +1,19 @@
+[Unit]
+Description=Gunicorn for the portfolio site
+After=network.target
+
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/var/www/portfolio
+EnvironmentFile=/var/www/portfolio/.env
+RuntimeDirectory=portfolio
+RuntimeDirectoryMode=0750
+ExecStart=/var/www/portfolio/venv/bin/gunicorn portfolio.wsgi:application \
+    --workers 2 \
+    --umask 007 \
+    --bind unix:/run/portfolio/gunicorn.sock
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

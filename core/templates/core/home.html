@@ -1,0 +1,152 @@
+{% extends "core/base.html" %}
+
+{% block body %}
+{% if not profile %}
+<main class="wrap empty">
+    <h1>This site has no content yet</h1>
+    <p>Run <code>python manage.py seed_portfolio</code>, or sign in at <a href="/admin/">/admin/</a> and create a Profile.</p>
+</main>
+{% else %}
+
+<header class="topbar">
+    <div class="wrap topbar-inner">
+        <a class="brand" href="#top">{{ profile.name }}</a>
+        <nav aria-label="Sections">
+            <a href="#about">About</a>
+            <a href="#experience">Experience</a>
+            <a href="#projects">Projects</a>
+            <a href="#skills">Skills</a>
+            <a href="#contact">Contact</a>
+        </nav>
+    </div>
+</header>
+
+<main id="top">
+    <section class="hero">
+        <div class="wrap">
+            <h1>{{ profile.name }}</h1>
+            <p class="lead">{{ profile.headline }}</p>
+            <div class="hero-links">
+                {% if profile.resume %}<a class="button" href="{{ profile.resume.url }}" download>Download resume</a>{% endif %}
+                {% if profile.github_url %}<a href="{{ profile.github_url }}" rel="noopener">GitHub</a>{% endif %}
+                {% if profile.linkedin_url %}<a href="{{ profile.linkedin_url }}" rel="noopener">LinkedIn</a>{% endif %}
+                <a href="mailto:{{ profile.email }}">Email</a>
+            </div>
+        </div>
+        <svg class="trace" id="trace" viewBox="0 0 1200 140" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <polyline id="trace-line" points="" />
+        </svg>
+    </section>
+
+    <div class="wrap">
+        <section class="section" id="about">
+            <h2>About</h2>
+            <div class="body">
+                {% for p in profile.paragraphs %}<p>{{ p }}</p>{% endfor %}
+                {% if profile.location %}<p class="meta">Based in {{ profile.location }}.</p>{% endif %}
+            </div>
+        </section>
+
+        <section class="section" id="experience">
+            <h2>Experience</h2>
+            <div class="body">
+                <ol class="timeline">
+                    {% for job in experiences %}
+                    <li>
+                        <h3>{{ job.role }}</h3>
+                        <p class="meta">{{ job.company }}{% if job.location %}, {{ job.location }}{% endif %} &middot; {{ job.period }}</p>
+                        <ul>{% for b in job.bullet_list %}<li>{{ b }}</li>{% endfor %}</ul>
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </section>
+
+        <section class="section" id="projects">
+            <h2>Projects</h2>
+            <div class="body">
+                {% for project in projects %}
+                <article class="project">
+                    {% if project.image %}<img src="{{ project.image.url }}" alt="{{ project.title }} screenshot" loading="lazy">{% endif %}
+                    <h3>{{ project.title }}</h3>
+                    {% if project.summary %}<p>{{ project.summary }}</p>{% endif %}
+                    {% if project.tech_list %}<p class="tech">{{ project.tech }}</p>{% endif %}
+                    {% if project.bullet_list %}<ul>{% for b in project.bullet_list %}<li>{{ b }}</li>{% endfor %}</ul>{% endif %}
+                    {% if project.github_url or project.live_url %}
+                    <p class="links">
+                        {% if project.github_url %}<a href="{{ project.github_url }}" rel="noopener">Source on GitHub</a>{% endif %}
+                        {% if project.live_url %}<a href="{{ project.live_url }}" rel="noopener">Live site</a>{% endif %}
+                    </p>
+                    {% endif %}
+                </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section" id="skills">
+            <h2>Skills</h2>
+            <div class="body">
+                <dl class="skills">
+                    {% for group in skill_groups %}
+                    <div><dt>{{ group.name }}</dt><dd>{{ group.items }}</dd></div>
+                    {% endfor %}
+                </dl>
+            </div>
+        </section>
+
+        <section class="section" id="education">
+            <h2>Education and certifications</h2>
+            <div class="body">
+                {% for item in education %}
+                <div class="credential">
+                    <h3>{{ item.title }}</h3>
+                    <p class="meta">{{ item.institution }}{% if item.period %} &middot; {{ item.period }}{% endif %}{% if item.detail %} &middot; {{ item.detail }}{% endif %}</p>
+                </div>
+                {% endfor %}
+                {% for item in certifications %}
+                <div class="credential">
+                    <h3>{{ item.title }}</h3>
+                    <p class="meta">{{ item.institution }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="section" id="contact">
+            <h2>Contact</h2>
+            <div class="body">
+                <p>Hiring, or have a backend problem to talk through? Send a message here or write to <a href="mailto:{{ profile.email }}">{{ profile.email }}</a>.</p>
+
+                {% for message in messages %}<p class="notice" role="status">{{ message }}</p>{% endfor %}
+
+                <form method="post" action="{% url 'contact' %}" class="contact-form" {% if form.errors %}data-has-errors{% endif %}>
+                    {% csrf_token %}
+                    {% if form.errors %}<p class="notice error" role="alert">The message wasn't sent. Fix the highlighted fields and send it again.</p>{% endif %}
+                    <div class="field{% if form.name.errors %} invalid{% endif %}">
+                        <label for="{{ form.name.id_for_label }}">Your name</label>
+                        {{ form.name }}
+                        {% for e in form.name.errors %}<span class="err">{{ e }}</span>{% endfor %}
+                    </div>
+                    <div class="field{% if form.email.errors %} invalid{% endif %}">
+                        <label for="{{ form.email.id_for_label }}">Your email</label>
+                        {{ form.email }}
+                        {% for e in form.email.errors %}<span class="err">{{ e }}</span>{% endfor %}
+                    </div>
+                    <div class="field{% if form.message.errors %} invalid{% endif %}">
+                        <label for="{{ form.message.id_for_label }}">Message</label>
+                        {{ form.message }}
+                        {% for e in form.message.errors %}<span class="err">{{ e }}</span>{% endfor %}
+                    </div>
+                    <div class="hp" aria-hidden="true">{{ form.website }}</div>
+                    <button type="submit" class="button">Send message</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="wrap">&copy; {% now "Y" %} {{ profile.name }}</div>
+</footer>
+{% endif %}
+{% endblock %}
