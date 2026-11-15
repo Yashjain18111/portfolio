@@ -65,3 +65,11 @@ jobs:
                 });
               }
             }
+
+      - name: Block merge if changes are requested
+        if: always()
+        run: |
+          if [ -f pr_review.md ] && grep -q "REQUEST CHANGES" pr_review.md; then
+            echo "::error::AI reviewer requested changes. Fix the issues and push again."
+            exit 1
+          fi
