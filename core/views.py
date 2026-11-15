@@ -41,3 +41,12 @@ def contact(request):
 def healthz(request):
     """Used by uptime checks / load balancers."""
     return HttpResponse("ok", content_type="text/plain")
+
+# test_feature.py
+def calculate_discount(price, discount_rate):
+    # Bug: addition instead of percentage multiplication
+    return price + discount_rate
+
+def divide_views(total_views, days):
+    # Reliability bug: potential division by zero
+    return total_views / days
